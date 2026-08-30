@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-darkBg overflow-hidden select-none">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Divya Drishti // Mining Safety Acoustic Detection System</title>
+  
+  <!-- Font imports -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&family=JetBrains+Mono:wght@300;400;600;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind Play CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            darkBg: '#0b0f19',
+            cyanAccent: '#00f0ff',
+            clearGreen: '#10b981',
+            hazardRed: '#ef4444',
+            warnAmber: '#f59e0b'
+          },
+          fontFamily: {
+            mono: ['"JetBrains Mono"', 'monospace'],
+            sans: ['Inter', 'sans-serif'],
+          },
+          boxShadow: {
+            'glow-cyan': '0 0 15px rgba(0, 240, 255, 0.45)',
+            'glow-red': '0 0 15px rgba(239, 68, 68, 0.6)',
+            'glow-green': '0 0 15px rgba(16, 185, 129, 0.45)',
+            'glow-amber': '0 0 15px rgba(245, 158, 11, 0.45)'
+          }
+        }
+      }
+    }
+  </script>
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="h-full font-mono text-slate-100 flex flex-col relative overflow-hidden">
+  
+  <!-- Tactical Scanline & Radar Overlay Grid -->
+  <div class="crt-overlay pointer-events-none absolute inset-0 z-50"></div>
+  <div class="radar-scan-line pointer-events-none absolute inset-0 z-40"></div>
+  <div id="alarm-strobe" class="pointer-events-none absolute inset-0 z-30 transition-all duration-75"></div>
+
+  <!-- HAZARD CONFIRMED FULL SCREEN OVERLAY -->
+  <div id="hazard-overlay" class="absolute inset-0 z-[60] bg-hazardRed/80 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="text-center animate-pulse">
+      <h1 class="text-8xl font-black text-white tracking-widest uppercase drop-shadow-lg shadow-glow-red">HAZARD CONFIRMED</h1>
+      <p class="text-3xl font-bold text-red-100 mt-4 tracking-widest">IMMINENT COLLISION / SEVERE ACOUSTIC EVENT DETECTED</p>
+    </div>
+  </div>
+
+  <!-- Top Tactical HUD Banner -->
+  <header class="w-full h-16 border-b border-cyanAccent/20 bg-darkBg/60 backdrop-blur-md flex items-center justify-between px-6 z-20">
+    <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-2">
+        <div class="w-3 h-3 rounded-full bg-cyanAccent animate-pulse shadow-glow-cyan"></div>
+        <span class="text-xl font-extrabold tracking-wider text-cyanAccent select-none">DIVYA DRISHTI</span>
+      </div>
+      <span class="text-xs text-cyanAccent/50 border border-cyanAccent/30 px-2 py-0.5 rounded uppercase select-none font-sans">MINING SAFETY ACOUSTIC DETECTION SYSTEM</span>
+    </div>
+    
+    <div class="flex items-center space-x-6">
+      <div class="flex items-center space-x-3 text-sm select-none">
+        <span class="text-slate-400">SYS TIME:</span>
+        <span id="hud-clock" class="text-cyanAccent font-semibold tracking-widest">00:00:00.000</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main HUD Layout Grid -->
+  <main class="flex-1 w-full grid grid-cols-12 gap-4 p-4 z-10 overflow-hidden min-h-0 relative">
+    
+    <!-- Left Sidebar: Controls & Serial Feed (cols 1-3) -->
+    <section class="col-span-12 xl:col-span-3 flex flex-col space-y-4 max-h-full overflow-y-auto select-none min-h-0">
+      
+      <!-- Live ESP32 Serial / Stream Settings -->
+      <div class="glass-panel p-4 flex flex-col space-y-3 flex-1 min-h-0">
+        <h2 class="text-xs font-bold uppercase tracking-widest text-cyanAccent border-b border-cyanAccent/20 pb-2 flex justify-between items-center">
+          <span>HARDWARE FEED CONTROL</span>
+          <span id="feed-badge" class="text-[10px] text-clearGreen bg-clearGreen/10 border border-clearGreen/20 px-1.5 py-0.5 rounded">WEBSOCKET</span>
+        </h2>
+        
+        <div class="flex flex-col space-y-2 text-xs">
+          <!-- Feed Toggle Mode -->
+          <div class="flex items-center justify-between bg-slate-900/60 p-2.5 rounded border border-slate-800">
+            <span class="text-slate-300">TELEMETRY INPUT FEED</span>
+            <div class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="feed-toggle" class="sr-only peer" checked>
+              <div class="w-9 h-5 bg-slate-800 rounded-full peer peer-focus:ring-1 peer-focus:ring-cyanAccent peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyanAccent peer-checked:after:bg-darkBg peer-checked:after:border-cyanAccent"></div>
+              <span class="ml-2 text-slate-400 select-none peer-checked:text-cyanAccent font-bold">WEBSOCKET</span>
+            </div>
+          </div>
+          
+          <div id="serial-controls" class="space-y-2 transition-all duration-300">
+            <div class="grid grid-cols-1 gap-2">
+              <div class="flex items-end">
+                <button id="ws-connect-btn" class="w-full bg-cyanAccent/10 border border-cyanAccent/30 hover:bg-cyanAccent/20 text-cyanAccent py-1.5 px-3 rounded font-bold transition-all flex items-center justify-center space-x-1">
+                  <span>CONNECT WEBSOCKET</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="flex-1 flex flex-col min-h-[140px] bg-slate-950/80 rounded border border-slate-800 p-2.5 font-mono text-[10px] text-slate-400 relative overflow-hidden">
+            <div class="flex items-center justify-between text-[8px] text-slate-500 uppercase border-b border-slate-800 pb-1 mb-1.5">
+              <span>HARDWARE TERMINAL LOG</span>
+              <span id="ws-indicator" class="text-[8px] text-slate-600">DISCONNECTED</span>
+            </div>
+            <div id="terminal-feed" class="flex-1 overflow-y-auto space-y-1 select-text scrollbar-thin max-h-[180px]">
+              <div class="text-slate-600">&gt; Waiting for stream initialization...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Center: Main 2D Canvas viewport (cols 4-9) -->
+    <section class="col-span-12 xl:col-span-6 relative flex flex-col min-h-[450px] xl:min-h-0 select-none border border-cyanAccent/10 bg-slate-950/20 rounded-lg overflow-hidden">
+      <!-- Container for 2D Canvas -->
+      <div id="canvas-container" class="w-full h-full absolute inset-0 bg-darkBg">
+        <canvas id="radar-canvas" class="w-full h-full block"></canvas>
+      </div>
+
+      <!-- Time control slider overlay -->
+      <div class="absolute top-4 right-4 flex items-center space-x-2 z-10 glass-panel px-3 py-1.5 text-xs">
+        <span class="text-[10px] text-slate-400">SYSTEM:</span>
+        <button id="sim-play-pause-btn" class="text-cyanAccent hover:text-white font-bold flex items-center space-x-1">
+          <span id="play-pause-text">ONLINE</span>
+        </button>
+      </div>
+
+    </section>
+    
+    <!-- Right Sidebar: Diagnostics & HUD Vector Feeds (cols 10-12) -->
+    <section class="col-span-12 xl:col-span-3 flex flex-col space-y-4 max-h-full overflow-y-auto select-none min-h-0">
+      
+      <!-- Primary Safety Status Card -->
+      <div id="status-card" class="glass-panel p-4 flex flex-col items-center justify-center border-l-4 border-clearGreen text-center shadow-glow-green transition-all duration-300">
+        <span class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">DIVYA DRISHTI STATUS</span>
+        <span id="status-text" class="text-2xl font-black tracking-tighter text-clearGreen mt-1 uppercase">SAFE</span>
+        <span id="status-description" class="text-[9px] text-slate-500 mt-1">ACOUSTIC LEVELS NORMAL</span>
+      </div>
+
+      <!-- New Divya Drishti Telemetry Panel -->
+      <div class="glass-panel p-4 flex flex-col space-y-2">
+        <h2 class="text-xs font-bold uppercase tracking-widest text-cyanAccent border-b border-cyanAccent/20 pb-2">
+          ACOUSTIC DETECTION ENGINE
+        </h2>
+        
+        <div class="bg-slate-900/60 p-3 rounded border border-slate-800 mb-2">
+          <div class="text-[10px] text-slate-500 uppercase font-bold mb-1">ACOUSTIC ENERGY SLOPE (dE/dt)</div>
+          <div class="flex items-end space-x-2">
+            <span id="val-acoustic" class="text-4xl font-black tracking-tight text-clearGreen">0.00</span>
+            <span class="text-xs text-slate-400 mb-1">units/s</span>
+          </div>
+          <div class="w-full bg-slate-800 h-1 mt-2 rounded overflow-hidden">
+            <div id="acoustic-bar" class="bg-clearGreen h-full transition-all duration-100" style="width: 0%"></div>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-3 text-xs">
+          <div class="bg-slate-900/60 p-2.5 rounded border border-slate-800">
+            <div class="text-[9px] text-slate-500 uppercase">ULTRASONIC DISTANCE</div>
+            <div class="flex items-end mt-1">
+              <span id="val-distance" class="text-xl font-bold text-slate-200">0</span>
+              <span class="text-[10px] text-slate-400 ml-1">cm</span>
+            </div>
+          </div>
+          <div class="bg-slate-900/60 p-2.5 rounded border border-slate-800">
+            <div class="text-[9px] text-slate-500 uppercase">VIBRATION STATUS</div>
+            <div id="val-vibration" class="text-sm font-bold text-clearGreen mt-1 uppercase">NOMINAL</div>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/60 p-3 rounded border border-slate-800 mt-2">
+          <div class="text-[10px] text-slate-500 uppercase font-bold mb-1">HYSTERESIS COUNTDOWN</div>
+          <div class="flex items-center space-x-3">
+            <span id="val-timer" class="text-3xl font-black tracking-tight text-cyanAccent">2.00</span>
+            <span class="text-xs text-slate-400">seconds</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="w-full h-16 border-t border-cyanAccent/10 bg-darkBg/80 backdrop-blur-md flex items-center justify-between px-6 z-20 select-none">
+    <div class="flex items-center space-x-6">
+      <div class="flex items-center space-x-2 text-xs">
+        <span class="text-slate-400">SYSTEM HEALTH:</span>
+        <span id="watchdog-pulse" class="text-clearGreen font-extrabold tracking-widest">OK</span>
+      </div>
+    </div>
+    <div class="hidden lg:flex flex-1 mx-8 text-xs font-mono text-cyanAccent/70 bg-slate-950/60 border border-slate-800/80 px-4 py-1.5 rounded h-8 items-center overflow-hidden">
+      <span class="text-slate-500 text-[10px] font-bold mr-2 select-none">LOG&gt;</span>
+      <div id="scrolling-ticker" class="truncate select-all text-[10px]">
+        Divya Drishti acoustic radar online. Monitoring for imminent hazards...
+      </div>
+    </div>
+    <div class="flex items-center space-x-4">
+      <button id="audio-toggle-btn" class="glass-btn px-3 py-1 flex items-center space-x-2 text-xs text-slate-400 hover:text-white transition-all">
+        <span id="audio-icon">🔊</span>
+        <span id="audio-status-txt">AUDIO: ON</span>
+      </button>
+    </div>
+  </footer>
+
+  <!-- Script initialization (NOT module, so we don't import Three.js) -->
+  <script src="app.js"></script>
+</body>
+</html>
