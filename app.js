@@ -15,6 +15,7 @@ const COLORS = {
   green: '#10b981',
   yellow: '#f59e0b',
   red: '#ef4444',
+  purple: '#8b5cf6',
   blue: '#3b82f6',
   darkBg: '#0b0f19'
 };
@@ -128,6 +129,9 @@ const DOM = {
   wsIndicator: document.getElementById('ws-indicator'),
   wsConnectBtn: document.getElementById('ws-connect-btn'),
   simPlayPauseBtn: document.getElementById('sim-play-pause-btn'),
+  btnScen1: document.getElementById('btn-scen-1'),
+  btnScen2: document.getElementById('btn-scen-2'),
+  btnScen3: document.getElementById('btn-scen-3'),
 };
 
 function appendLog(msg) {
@@ -273,45 +277,85 @@ function applyRiskLevelTheme() {
     DOM.hazardOverlay.style.opacity = '1';
     DOM.alarmStrobe.classList.add('bg-hazardRed/20');
     Audio.startAlert();
+  } else if (STATE.riskLevel === 'DEGRADED') {
+    DOM.statusCard.classList.add('border-purple-500', 'shadow-glow-purple', 'animate-pulse');
+    DOM.statusText.className = 'text-2xl font-black tracking-tighter text-purple-400 mt-1 uppercase animate-pulse';
+    DOM.statusText.textContent = 'DEGRADED';
+    DOM.statusDesc.textContent = 'UART HEARTBEAT LOST';
+    DOM.acousticBar.classList.add('bg-purple-500');
+    DOM.valVibration.className = 'text-sm font-bold text-purple-400 mt-1 uppercase';
+    DOM.valVibration.textContent = 'UNKNOWN';
+    
+    DOM.hazardOverlay.style.opacity = '0';
+    DOM.alarmStrobe.classList.add('bg-purple-500/20');
+    Audio.stopAlert();
   }
 }
 
-// SIMULATOR FOR DEV WHEN NOT CONNECTED
-setInterval(() => {
-  if (STATE.isConnected) return;
-  // Slowly simulate a hazard
-  let d = STATE.ultrasonic_distance_cm - 2;
-  if (d < 50) d = 50;
-  
-  let a = STATE.acoustic_dE_dt;
-  if (d < 200) {
-    a += 0.05;
-    if (a > 8.0) a = 8.0;
-  } else {
-    a = 1.0 + Math.random() * 0.5;
-  }
-  
-  let t = STATE.hysteresis_timer;
-  if (a > 6.0) {
-    t -= 0.1;
-    if (t < 0.0) t = 0.0;
-  } else {
-    t = 2.0;
-  }
-  
-  // reset loop
-  if (t === 0.0 && Math.random() < 0.02) {
-    d = 600;
-    a = 1.0;
-    t = 2.0;
-  }
+// ==========================================
+// MANUAL PRESENTATION CONTROL LOGIC
+// ==========================================
 
-  STATE.ultrasonic_distance_cm = d;
-  STATE.acoustic_dE_dt = a;
-  STATE.hysteresis_timer = t;
+let hazardInterval = null;
+
+function clearAutomatedHazard() {
+  if (hazardInterval) {
+    clearInterval(hazardInterval);
+    hazardInterval = null;
+  }
+  // Turn off automated websocket processing override if needed, 
+  // but since it's a presentation override, we just assume websocket is offline
+  STATE.isConnected = false; 
+}
+
+// Scenario 1: Nominal State (Safe Path)
+DOM.btnScen1.addEventListener('click', () => {
+  Audio.playBeep(880, 'sine', 0.1);
+  clearAutomatedHazard();
   
-  updateLogic();
-}, 100);
+  STATE.acoustic_dE_dt = 2.5; // low, stable value
+  STATE.ultrasonic_distance_cm = 600;
+  STATE.hysteresis_timer = 2.0;
+  
+  updateLogic(); // Sets UI to GREEN
+});
+
+// Scenario 2: Hazard & Actuation (Collision Course)
+DOM.btnScen2.addEventListener('click', () => {
+  Audio.playBeep(880, 'sine', 0.1);
+  clearAutomatedHazard();
+  
+  // Start automated hazard ramp up
+  hazardInterval = setInterval(() => {
+    STATE.acoustic_dE_dt += 0.8;
+    STATE.ultrasonic_distance_cm -= 25;
+    
+    if (STATE.ultrasonic_distance_cm < 50) STATE.ultrasonic_distance_cm = 50;
+    
+    if (STATE.acoustic_dE_dt > 6.0) {
+      STATE.hysteresis_timer -= 0.1;
+      if (STATE.hysteresis_timer <= 0.0) {
+        STATE.hysteresis_timer = 0.0;
+        // Reached red state, hold it
+        clearInterval(hazardInterval);
+      }
+    }
+    updateLogic();
+  }, 100);
+});
+
+// Scenario 3: System Degraded (Watchdog Fail)
+DOM.btnScen3.addEventListener('click', () => {
+  Audio.playBeep(880, 'sine', 0.1);
+  clearAutomatedHazard();
+  
+  STATE.acoustic_dE_dt = 0.0;
+  STATE.ultrasonic_distance_cm = 0;
+  STATE.hysteresis_timer = 0.0;
+  STATE.riskLevel = 'DEGRADED';
+  
+  applyRiskLevelTheme();
+});
 
 
 // ==========================================
@@ -365,6 +409,22 @@ function draw() {
   let themeColor = COLORS.green;
   if (STATE.riskLevel === 'YELLOW') themeColor = COLORS.yellow;
   else if (STATE.riskLevel === 'RED') themeColor = COLORS.red;
+  else if (STATE.riskLevel === 'DEGRADED') themeColor = COLORS.purple;
+
+  // 1b. If Degraded, just draw dull grey/purple warning and skip ripples
+  if (STATE.riskLevel === 'DEGRADED') {
+    ctx.fillStyle = 'rgba(139, 92, 246, 0.1)';
+    ctx.fillRect(0, 0, width, height);
+    
+    ctx.fillStyle = COLORS.purple;
+    ctx.font = 'bold 36px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    // Flashing effect
+    if (Math.floor(Date.now() / 500) % 2 === 0) {
+      ctx.fillText(`SYSTEM DEGRADED - UART HEARTBEAT LOST`, centerX, centerY);
+    }
+    return; // Halt acoustic rendering
+  }
 
   // 2. Draw inward expanding ripples
   const speed = 1.0 + (STATE.acoustic_dE_dt); // speed up with acoustic energy
