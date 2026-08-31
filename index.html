@@ -111,94 +111,99 @@
     </section>
     
     <!-- Right Sidebar: Diagnostics & HUD Vector Feeds (cols 10-12) -->
-    <section class="col-span-12 xl:col-span-3 flex flex-col space-y-4 max-h-full overflow-y-auto select-none min-h-0">
+    <section class="col-span-12 xl:col-span-3 flex flex-col space-y-4 max-h-full overflow-y-auto select-none min-h-0 relative z-20">
       
       <!-- Primary Safety Status Card -->
-      <div id="status-card" class="glass-panel p-4 flex flex-col items-center justify-center border-l-4 border-clearGreen text-center shadow-glow-green transition-all duration-300">
-        <span class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">DIVYA DRISHTI STATUS</span>
-        <span id="status-text" class="text-2xl font-black tracking-tighter text-clearGreen mt-1 uppercase">SAFE</span>
-        <span id="status-description" class="text-[9px] text-slate-500 mt-1">ACOUSTIC LEVELS NORMAL</span>
+      <div id="status-card" class="backdrop-blur-xl bg-slate-900/40 p-4 flex flex-col items-center justify-center border-l-4 border-clearGreen text-center shadow-glow-green transition-all duration-300 rounded-r-lg">
+        <span class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold mb-1">SYSTEM STATE</span>
+        <span id="status-text" class="text-3xl font-black tracking-tighter text-clearGreen uppercase drop-shadow-md">SAFE</span>
+        <span id="status-description" class="text-[10px] text-slate-500 mt-1 font-semibold tracking-wide">ACOUSTIC LEVELS NORMAL</span>
       </div>
 
       <!-- New Divya Drishti Telemetry Panel -->
-      <div class="glass-panel p-4 flex flex-col space-y-2">
-        <h2 class="text-xs font-bold uppercase tracking-widest text-cyanAccent border-b border-cyanAccent/20 pb-2">
-          ACOUSTIC DETECTION ENGINE
+      <div class="backdrop-blur-xl bg-slate-900/40 p-5 flex flex-col space-y-3 rounded-lg border border-slate-800/50 shadow-lg">
+        <h2 class="text-xs font-bold uppercase tracking-widest text-cyanAccent/80 border-b border-cyanAccent/20 pb-2 flex items-center">
+          <div class="w-1.5 h-1.5 rounded-full bg-cyanAccent mr-2 animate-pulse"></div>
+          TELEMETRY ENGINE
         </h2>
         
-        <div class="bg-slate-900/60 p-3 rounded border border-slate-800 mb-2">
-          <div class="text-[10px] text-slate-500 uppercase font-bold mb-1">ACOUSTIC ENERGY SLOPE (dE/dt)</div>
-          <div class="flex items-end space-x-2">
-            <span id="val-acoustic" class="text-4xl font-black tracking-tight text-clearGreen">0.00</span>
-            <span class="text-xs text-slate-400 mb-1">units/s</span>
+        <div class="bg-darkBg/50 p-4 rounded-lg border border-slate-800/80 shadow-inner">
+          <div class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-2">ACOUSTIC ENERGY (dE/dt)</div>
+          <div class="flex items-baseline space-x-2">
+            <span id="val-acoustic" class="text-5xl font-black tracking-tighter text-clearGreen drop-shadow-md transition-colors duration-300">0.00</span>
+            <span class="text-xs text-slate-400 font-bold">units/s</span>
           </div>
-          <div class="w-full bg-slate-800 h-1 mt-2 rounded overflow-hidden">
-            <div id="acoustic-bar" class="bg-clearGreen h-full transition-all duration-100" style="width: 0%"></div>
+          <div class="w-full bg-slate-900 h-1.5 mt-3 rounded-full overflow-hidden border border-slate-800">
+            <div id="acoustic-bar" class="bg-clearGreen h-full transition-all duration-150 ease-out shadow-glow-green" style="width: 0%"></div>
           </div>
         </div>
         
-        <div class="grid grid-cols-2 gap-3 text-xs">
-          <div class="bg-slate-900/60 p-2.5 rounded border border-slate-800">
-            <div class="text-[9px] text-slate-500 uppercase">ULTRASONIC DISTANCE</div>
-            <div class="flex items-end mt-1">
-              <span id="val-distance" class="text-xl font-bold text-slate-200">0</span>
-              <span class="text-[10px] text-slate-400 ml-1">cm</span>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-darkBg/50 p-3 rounded-lg border border-slate-800/80 shadow-inner flex flex-col justify-between">
+            <div class="text-[9px] text-slate-500 uppercase font-bold tracking-wider">PROXIMITY RADAR</div>
+            <div class="flex items-baseline mt-2">
+              <span id="val-distance" class="text-2xl font-black text-slate-200">0</span>
+              <span class="text-[10px] text-slate-400 ml-1 font-bold">cm</span>
             </div>
           </div>
-          <div class="bg-slate-900/60 p-2.5 rounded border border-slate-800">
-            <div class="text-[9px] text-slate-500 uppercase">VIBRATION STATUS</div>
-            <div id="val-vibration" class="text-sm font-bold text-clearGreen mt-1 uppercase">NOMINAL</div>
+          <div class="bg-darkBg/50 p-3 rounded-lg border border-slate-800/80 shadow-inner flex flex-col justify-between">
+            <div class="text-[9px] text-slate-500 uppercase font-bold tracking-wider">VIBRATION</div>
+            <div id="val-vibration" class="text-lg font-black text-clearGreen mt-2 uppercase drop-shadow-sm transition-colors duration-300">NOMINAL</div>
           </div>
         </div>
 
-        <div class="bg-slate-900/60 p-3 rounded border border-slate-800 mt-2">
-          <div class="text-[10px] text-slate-500 uppercase font-bold mb-1">HYSTERESIS COUNTDOWN</div>
-          <div class="flex items-center space-x-3">
-            <span id="val-timer" class="text-3xl font-black tracking-tight text-cyanAccent">2.00</span>
-            <span class="text-xs text-slate-400">seconds</span>
+        <div class="bg-darkBg/50 p-4 rounded-lg border border-slate-800/80 shadow-inner flex items-center justify-between">
+          <div class="flex flex-col">
+            <span class="text-[9px] text-slate-500 uppercase font-bold tracking-wider">HYSTERESIS</span>
+            <span class="text-[9px] text-slate-600 font-bold">COUNTDOWN</span>
+          </div>
+          <div class="flex items-baseline space-x-1">
+            <span id="val-timer" class="text-3xl font-black tracking-tighter text-cyanAccent drop-shadow-md">2.00</span>
+            <span class="text-xs text-slate-500 font-bold">s</span>
           </div>
         </div>
       </div>
     </section>
   </main>
 
-  <!-- Bottom Horizontal Feed Control Panel -->
-  <div class="w-full bg-slate-900/40 border-t border-slate-800 px-6 py-2 flex items-center space-x-4 z-20">
-    <div class="flex items-center space-x-3 border-r border-slate-800 pr-4">
-      <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">HARDWARE FEED</span>
-      <div class="relative inline-flex items-center cursor-pointer">
-        <input type="checkbox" id="feed-toggle" class="sr-only peer" checked>
-        <div class="w-9 h-5 bg-slate-800 rounded-full peer peer-focus:ring-1 peer-focus:ring-cyanAccent peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyanAccent peer-checked:after:bg-darkBg peer-checked:after:border-cyanAccent"></div>
-        <span class="ml-2 text-slate-400 select-none peer-checked:text-cyanAccent text-[10px] font-bold">WEBSOCKET</span>
+  <!-- Bottom Horizontal Control & Terminal Strip -->
+  <div class="w-full bg-slate-950/80 backdrop-blur-xl border-t border-cyanAccent/20 px-6 py-2 flex items-center justify-between space-x-4 z-20">
+    <!-- Left: Hardware / Mock Selection -->
+    <div class="flex items-center space-x-4 border-r border-slate-800 pr-4">
+      <div class="flex items-center space-x-2">
+        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">DATA SRC</span>
+        <div class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="feed-toggle" class="sr-only peer">
+          <div class="w-8 h-4 bg-slate-800 rounded-full peer peer-focus:ring-1 peer-focus:ring-cyanAccent peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-cyanAccent peer-checked:after:bg-darkBg peer-checked:after:border-cyanAccent"></div>
+        </div>
+        <span id="feed-mode-label" class="text-cyanAccent text-[10px] font-bold w-12 text-center uppercase">MOCK</span>
       </div>
+      <button id="ws-connect-btn" class="bg-cyanAccent/10 border border-cyanAccent/30 hover:bg-cyanAccent/20 text-cyanAccent py-1 px-3 rounded text-[10px] font-bold transition-all whitespace-nowrap hidden">
+        CONNECT WS
+      </button>
     </div>
     
-    <button id="ws-connect-btn" class="bg-cyanAccent/10 border border-cyanAccent/30 hover:bg-cyanAccent/20 text-cyanAccent py-1 px-3 rounded text-[10px] font-bold transition-all whitespace-nowrap">
-      CONNECT WEBSOCKET
-    </button>
-    
-    <div class="flex-1 flex items-center space-x-2 bg-slate-950/80 rounded border border-slate-800 px-3 py-1 font-mono text-[10px] text-slate-400 overflow-hidden">
-      <span id="ws-indicator" class="text-slate-600 font-bold pr-2 border-r border-slate-800 uppercase">DISCONNECTED</span>
-      <div id="terminal-feed" class="truncate flex-1">
-        <span>&gt; Waiting for stream initialization...</span>
-      </div>
+    <!-- Middle: MOCK INJECTION CONSOLE -->
+    <div id="mock-console" class="flex items-center space-x-2">
+      <span class="text-[9px] text-slate-500 font-bold uppercase tracking-widest pr-2 border-r border-slate-700">DEV MOCK INJECT</span>
+      <button id="btn-scen-1" class="text-[9px] px-2 py-1 bg-clearGreen/10 border border-clearGreen/30 text-clearGreen rounded hover:bg-clearGreen/20 transition-all font-bold">
+        NOMINAL
+      </button>
+      <button id="btn-scen-2" class="text-[9px] px-2 py-1 bg-warnAmber/10 border border-warnAmber/30 text-warnAmber rounded hover:bg-warnAmber/20 transition-all font-bold">
+        HAZARD
+      </button>
+      <button id="btn-scen-3" class="text-[9px] px-2 py-1 bg-purple-500/10 border border-purple-500/30 text-purple-400 rounded hover:bg-purple-500/20 transition-all font-bold">
+        DEGRADED
+      </button>
     </div>
-  </div>
 
-  <!-- Manual Presentation Control Panel -->
-  <div class="absolute bottom-24 left-1/2 -translate-x-1/2 z-[70] bg-darkBg/90 border border-slate-700/50 backdrop-blur-md px-4 py-2 rounded-lg flex space-x-3 shadow-lg hover:opacity-100 transition-opacity">
-    <div class="text-[9px] text-slate-400 flex items-center pr-2 border-r border-slate-700 font-bold uppercase tracking-widest">
-      PRESENTER OVERRIDE
+    <!-- Right: Terminal Feed -->
+    <div class="flex-1 flex items-center space-x-2 bg-darkBg/90 rounded border border-slate-800 px-3 py-1 font-mono text-[10px] text-slate-400 overflow-hidden shadow-inner ml-4">
+      <span id="ws-indicator" class="text-slate-600 font-bold pr-2 border-r border-slate-800 uppercase">OFFLINE</span>
+      <div id="terminal-feed" class="truncate flex-1 text-[10px]">
+        <span>&gt; INITIALIZING DATA PIPELINE...</span>
+      </div>
     </div>
-    <button id="btn-scen-1" class="text-[10px] px-3 py-1 bg-clearGreen/10 border border-clearGreen/30 text-clearGreen rounded hover:bg-clearGreen/20 transition-all font-bold">
-      [1] NOMINAL
-    </button>
-    <button id="btn-scen-2" class="text-[10px] px-3 py-1 bg-warnAmber/10 border border-warnAmber/30 text-warnAmber rounded hover:bg-warnAmber/20 transition-all font-bold">
-      [2] HAZARD TRIGGER
-    </button>
-    <button id="btn-scen-3" class="text-[10px] px-3 py-1 bg-purple-500/10 border border-purple-500/30 text-purple-400 rounded hover:bg-purple-500/20 transition-all font-bold">
-      [3] SYSTEM DEGRADED
-    </button>
   </div>
 
   <footer class="w-full h-12 border-t border-cyanAccent/10 bg-darkBg/80 backdrop-blur-md flex items-center justify-between px-6 z-20 select-none">

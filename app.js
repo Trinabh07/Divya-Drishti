@@ -156,6 +156,15 @@ function appendLog(msg) {
 
 let ws = null;
 
+function handleTelemetryData(payload) {
+  if (payload.acoustic_dE_dt !== undefined) {
+    STATE.acoustic_dE_dt = payload.acoustic_dE_dt;
+    STATE.ultrasonic_distance_cm = payload.ultrasonic_distance_cm;
+    STATE.hysteresis_timer = payload.hysteresis_timer;
+    updateLogic();
+  }
+}
+
 function connectWebSocket() {
   if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
     appendLog("WebSocket already connected or connecting.");
@@ -182,11 +191,9 @@ function connectWebSocket() {
     ws.onmessage = (e) => {
       try {
         const data = JSON.parse(e.data);
-        if (data.acoustic_dE_dt !== undefined) {
-          STATE.acoustic_dE_dt = data.acoustic_dE_dt;
-          STATE.ultrasonic_distance_cm = data.ultrasonic_distance_cm;
-          STATE.hysteresis_timer = data.hysteresis_timer;
-          updateLogic();
+        const isWsMode = document.getElementById('feed-toggle').checked;
+        if (isWsMode) {
+          handleTelemetryData(data);
         }
       } catch (err) {
         // Ignore non-json
@@ -209,6 +216,22 @@ function connectWebSocket() {
 }
 
 DOM.wsConnectBtn.addEventListener('click', connectWebSocket);
+
+// Feed Toggle Logic
+document.getElementById('feed-toggle').addEventListener('change', (e) => {
+  const isWs = e.target.checked;
+  const label = document.getElementById('feed-mode-label');
+  const btn = document.getElementById('ws-connect-btn');
+  if (isWs) {
+    label.textContent = "HARDWARE";
+    btn.classList.remove('hidden');
+    appendLog("Switched to Hardware WebSocket feed.");
+  } else {
+    label.textContent = "MOCK";
+    btn.classList.add('hidden');
+    appendLog("Switched to Mock Data Pipeline.");
+  }
+});
 
 function updateLogic() {
   DOM.valAcoustic.textContent = STATE.acoustic_dE_dt.toFixed(2);
@@ -303,78 +326,119 @@ function applyRiskLevelTheme() {
 }
 
 // ==========================================
-// MANUAL PRESENTATION CONTROL LOGIC
+// CENTRALIZED MOCK DATA GENERATOR
 // ==========================================
 
-let hazardInterval = null;
-
-function clearAutomatedHazard() {
-  if (hazardInterval) {
-    clearInterval(hazardInterval);
-    hazardInterval = null;
+class MockEngine {
+  constructor() {
+    this.interval = null;
+    this.scenario = 'NOMINAL'; // 'NOMINAL', 'HAZARD', 'DEGRADED'
+    this.mockState = {
+      acoustic: 2.5,
+      distance: 600,
+      timer: 2.0
+    };
   }
-  STATE.isConnected = false; 
-}
 
-// Scenario 1: Nominal State (Safe Path)
-DOM.btnScen1.addEventListener('click', () => {
-  Audio.playBeep(880, 'sine', 0.1);
-  clearAutomatedHazard();
-  
-  STATE.acoustic_dE_dt = 2.5;
-  STATE.ultrasonic_distance_cm = 600;
-  STATE.hysteresis_timer = 2.0;
-  STATE.riskLevel = 'GREEN';
-  
-  // Reset Threat Truck Position & state
-  if (threatGroup) {
-    threatGroup.position.set(-8, 0, -150);
+  start() {
+    if (this.interval) return;
+    this.interval = setInterval(() => this.tick(), 100);
   }
-  impactTriggered = false;
-  
-  applyRiskLevelTheme();
-  updateLogic();
-});
 
-// Scenario 2: Hazard & Actuation (Collision Course)
-DOM.btnScen2.addEventListener('click', () => {
-  Audio.playBeep(880, 'sine', 0.1);
-  clearAutomatedHazard();
-  
-  STATE.riskLevel = 'GREEN'; // Start at green and ramp up
-  impactTriggered = false;
-  
-  hazardInterval = setInterval(() => {
-    STATE.acoustic_dE_dt += 0.8;
-    STATE.ultrasonic_distance_cm -= 35;
+  setScenario(scen) {
+    this.scenario = scen;
+    if (scen === 'NOMINAL') {
+      this.mockState = { acoustic: 2.5, distance: 600, timer: 2.0 };
+      if (typeof threatGroup !== 'undefined' && threatGroup) {
+        threatGroup.position.set(-8, 0, -150);
+        threatGroup.rotation.y = Math.PI;
+      }
+      if (typeof impactTriggered !== 'undefined') impactTriggered = false;
+    } else if (scen === 'HAZARD') {
+      this.mockState = { acoustic: 2.5, distance: 600, timer: 2.0 };
+      if (typeof threatGroup !== 'undefined' && threatGroup) {
+        threatGroup.position.set(-8, 0, -150);
+        threatGroup.rotation.y = Math.PI;
+      }
+      if (typeof impactTriggered !== 'undefined') impactTriggered = false;
+    } else if (scen === 'DEGRADED') {
+      this.mockState = { acoustic: 0.0, distance: 0, timer: 0.0 };
+      if (typeof impactTriggered !== 'undefined') impactTriggered = false;
+    }
     
-    if (STATE.ultrasonic_distance_cm < 50) STATE.ultrasonic_distance_cm = 50;
-    
-    if (STATE.acoustic_dE_dt > 6.0) {
-      STATE.hysteresis_timer -= 0.1;
-      if (STATE.hysteresis_timer <= 0.0) {
-        STATE.hysteresis_timer = 0.0;
-        clearInterval(hazardInterval); // Lock in red
+    const isMockFeed = !document.getElementById('feed-toggle').checked;
+    if (isMockFeed) this.pushData(); // Force immediate update if in mock mode
+  }
+
+  tick() {
+    const isMockFeed = !document.getElementById('feed-toggle').checked;
+    if (!isMockFeed) return; // Yield to hardware feed
+
+    if (this.scenario === 'NOMINAL') {
+      // Simulate minor noise
+      this.mockState.acoustic = 2.0 + Math.random() * 1.5;
+    } else if (this.scenario === 'HAZARD') {
+      this.mockState.acoustic += 0.8;
+      this.mockState.distance -= 35;
+      
+      if (this.mockState.distance < 50) this.mockState.distance = 50;
+      
+      if (this.mockState.acoustic > 6.0) {
+        this.mockState.timer -= 0.1;
+        if (this.mockState.timer <= 0.0) {
+          this.mockState.timer = 0.0;
+        }
       }
     }
-    updateLogic();
-  }, 100);
+    // DEGRADED stays 0
+    
+    this.pushData();
+  }
+
+  pushData() {
+    handleTelemetryData({
+      acoustic_dE_dt: this.mockState.acoustic,
+      ultrasonic_distance_cm: this.mockState.distance,
+      hysteresis_timer: this.mockState.timer
+    });
+  }
+}
+
+const mockEngine = new MockEngine();
+mockEngine.start();
+
+// Presenter Override Injection
+DOM.btnScen1.addEventListener('click', () => {
+  Audio.init();
+  Audio.playBeep(880, 'sine', 0.1);
+  appendLog("INJECTING: NOMINAL STATE");
+  mockEngine.setScenario('NOMINAL');
 });
 
-// Scenario 3: System Degraded (Watchdog Fail)
-DOM.btnScen3.addEventListener('click', () => {
+DOM.btnScen2.addEventListener('click', () => {
+  Audio.init();
   Audio.playBeep(880, 'sine', 0.1);
-  clearAutomatedHazard();
-  
-  STATE.acoustic_dE_dt = 0.0;
-  STATE.ultrasonic_distance_cm = 0;
-  STATE.hysteresis_timer = 0.0;
-  STATE.riskLevel = 'DEGRADED';
-  impactTriggered = false;
-  
-  applyRiskLevelTheme();
-  updateLogic();
+  appendLog("INJECTING: HAZARD STATE");
+  mockEngine.setScenario('HAZARD');
 });
+
+DOM.btnScen3.addEventListener('click', () => {
+  Audio.init();
+  Audio.playBeep(880, 'sine', 0.1);
+  appendLog("INJECTING: DEGRADED STATE");
+  mockEngine.setScenario('DEGRADED');
+});
+
+// ==========================================
+// SYSTEM CLOCK UPDATER
+// ==========================================
+setInterval(() => {
+  const clockEl = document.getElementById('hud-clock');
+  if (clockEl) {
+    const now = new Date();
+    clockEl.textContent = now.toISOString().substring(11, 23);
+  }
+}, 33);
 
 // ==========================================
 // 5. THREE.JS 3D ENVIRONMENT (Mining Trench)
