@@ -610,12 +610,13 @@ for (let i = 0; i < 40; i++) {
   wall.receiveShadow = true;
   
   const side = Math.random() > 0.5 ? 1 : -1;
-  wall.position.x = side * (20 + Math.random() * 15);
+  wall.position.x = side * (25 + Math.random() * 15);
   wall.position.z = -200 + (Math.random() * 250);
   wall.position.y = 10;
   
-  wall.rotation.y = Math.random() * Math.PI;
-  wall.scale.set(1, 0.5 + Math.random(), 1 + Math.random());
+  // Restrict rotation so they run parallel to the road and don't block the lanes
+  wall.rotation.y = (Math.random() - 0.5) * 0.4;
+  wall.scale.set(1, 0.5 + Math.random(), 1 + Math.random() * 2);
   
   wallsGroup.add(wall);
 }
