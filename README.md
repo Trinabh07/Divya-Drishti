@@ -1,7 +1,7 @@
 <div align="center">
-  <img src="Divya-Drishti/main/assets/banner.png" alt="Divya Drishti Banner" width="100%" />
+<img src="/banner.png" alt="Divya Drishti Banner" />
   
-  #  DIVYA DRISHTI
+  #  Divya Drishti
   **Next-Generation Mining Safety & Acoustic Detection System**
   
   *Built for the Smart India Hackathon 2026*
