@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/Trinabh07/Divya-Drishti/main/assets/banner.png" alt="Divya Drishti Banner" width="100%" />
+  <img src="Divya-Drishti/main/assets/banner.png" alt="Divya Drishti Banner" width="100%" />
   
   # 👁️ DIVYA DRISHTI
   **Next-Generation Mining Safety & Acoustic Detection System**
