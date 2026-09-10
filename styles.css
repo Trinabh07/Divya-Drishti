@@ -1,0 +1,241 @@
+/* Base styles and defaults */
+:root {
+  --color-bg: #0b0f19;
+  --color-cyan: #00f0ff;
+  --color-green: #10b981;
+  --color-red: #ef4444;
+  --color-amber: #f59e0b;
+  --color-purple: #8b5cf6;
+}
+
+body {
+  background-color: var(--color-bg);
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(11, 15, 25, 0.5) 0%, rgba(5, 7, 12, 0.9) 100%),
+    linear-gradient(rgba(0, 240, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.015) 1px, transparent 1px);
+  background-size: 100% 100%, 40px 40px, 40px 40px;
+  background-position: center;
+}
+
+/* Glassmorphism Tactical Panels */
+.glass-panel {
+  background: rgba(11, 15, 25, 0.75);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  border: 1px solid rgba(0, 240, 255, 0.12);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-panel:hover {
+  border-color: rgba(0, 240, 255, 0.22);
+}
+
+.glass-btn {
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 4px;
+}
+
+.glass-btn:hover {
+  background: rgba(0, 240, 255, 0.1);
+  border-color: rgba(0, 240, 255, 0.4);
+  color: #fff;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+}
+
+.glass-btn:active {
+  transform: scale(0.95);
+}
+
+/* Scenario Controls Styles */
+.scenario-btn {
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+}
+
+.scenario-btn.active {
+  border-color: rgba(0, 240, 255, 0.5);
+  background: rgba(0, 240, 255, 0.08);
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.15) inset;
+}
+
+.scenario-btn:hover:not(.active) {
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Custom Scrollbar */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(0, 240, 255, 0.2);
+  border-radius: 2px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 240, 255, 0.4);
+}
+
+/* Tactical CRT Overlay & Scanlines */
+.crt-overlay {
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.15) 50%
+  );
+  background-size: 100% 4px;
+  opacity: 0.8;
+  animation: crt-flicker 0.25s infinite;
+}
+
+.radar-scan-line {
+  background: linear-gradient(
+    0deg,
+    rgba(0, 240, 255, 0) 0%,
+    rgba(0, 240, 255, 0.05) 10%,
+    rgba(0, 240, 255, 0.15) 98%,
+    rgba(0, 240, 255, 0.5) 100%
+  );
+  height: 12%;
+  top: -12%;
+  animation: radar-sweep 6s linear infinite;
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
+}
+
+/* Animations */
+@keyframes crt-flicker {
+  0% { opacity: 0.78; }
+  50% { opacity: 0.82; }
+  100% { opacity: 0.8; }
+}
+
+@keyframes radar-sweep {
+  0% {
+    top: -12%;
+  }
+  100% {
+    top: 110%;
+  }
+}
+
+@keyframes scan-grow {
+  0%, 100% { width: 10%; }
+  50% { width: 85%; }
+}
+
+.animate-scan-speed {
+  animation: scan-grow 4s ease-in-out infinite;
+}
+
+/* Alert Flashing Strobe Layer */
+#alarm-strobe.active-critical {
+  background: rgba(239, 68, 68, 0.15);
+  animation: strobe-alert-red 0.4s infinite alternate;
+  box-shadow: inset 0 0 100px rgba(239, 68, 68, 0.5);
+}
+
+#alarm-strobe.active-geofence {
+  background: rgba(239, 68, 68, 0.1);
+  animation: strobe-alert-red-slow 0.8s infinite alternate;
+  box-shadow: inset 0 0 70px rgba(239, 68, 68, 0.35);
+}
+
+#alarm-strobe.active-degraded {
+  background: rgba(139, 92, 246, 0.08);
+  animation: strobe-alert-purple-amber 1.2s infinite alternate;
+  box-shadow: inset 0 0 60px rgba(139, 92, 246, 0.25);
+}
+
+@keyframes strobe-alert-red {
+  0% {
+    background: rgba(239, 68, 68, 0.02);
+  }
+  100% {
+    background: rgba(239, 68, 68, 0.2);
+  }
+}
+
+@keyframes strobe-alert-red-slow {
+  0% {
+    background: rgba(239, 68, 68, 0.01);
+  }
+  100% {
+    background: rgba(239, 68, 68, 0.12);
+  }
+}
+
+@keyframes strobe-alert-purple-amber {
+  0% {
+    background: rgba(245, 158, 11, 0.02);
+    box-shadow: inset 0 0 40px rgba(245, 158, 11, 0.15);
+  }
+  100% {
+    background: rgba(139, 92, 246, 0.1);
+    box-shadow: inset 0 0 60px rgba(139, 92, 246, 0.35);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s infinite alternate;
+}
+
+@keyframes pulse-glow {
+  0% {
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+    border-color: rgba(239, 68, 68, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 25px rgba(239, 68, 68, 0.7);
+    border-color: rgba(239, 68, 68, 1);
+  }
+}
+
+/* Custom transitions and styles */
+.hud-card-red {
+  border-color: rgba(239, 68, 68, 0.6) !important;
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.35) !important;
+}
+
+.hud-card-amber {
+  border-color: rgba(245, 158, 11, 0.6) !important;
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.3) !important;
+}
+
+.hud-card-purple-amber {
+  border-color: rgba(139, 92, 246, 0.65) !important;
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.3) !important;
+  border-left-color: rgba(245, 158, 11, 0.8) !important;
+}
+
+.hud-card-green {
+  border-color: rgba(16, 185, 129, 0.6) !important;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.3) !important;
+}
+
+/* Text pulse animations */
+.glow-text-cyan {
+  text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
+}
+.glow-text-red {
+  text-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+}
+.glow-text-green {
+  text-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+}
+.glow-text-amber {
+  text-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+}
+.glow-text-purple-amber {
+  text-shadow: 0 0 8px rgba(139, 92, 246, 0.6), 0 0 12px rgba(245, 158, 11, 0.4);
+}
