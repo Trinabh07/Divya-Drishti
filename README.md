@@ -1,7 +1,7 @@
 <div align="center">
   <img src="Divya-Drishti/main/assets/banner.png" alt="Divya Drishti Banner" width="100%" />
   
-  # 👁️ DIVYA DRISHTI
+  #  DIVYA DRISHTI
   **Next-Generation Mining Safety & Acoustic Detection System**
   
   *Built for the Smart India Hackathon 2026*
@@ -13,17 +13,17 @@
 
 ---
 
-## 🛑 The Problem Statement
+##  The Problem Statement
 In open-cast mining environments, heavy machinery (like 100-ton dumper trucks) operates in extreme conditions characterized by **zero visibility** due to thick dust, fog, and blind corners within mining trenches. Traditional vision-based ADAS (Advanced Driver Assistance Systems) fail under these conditions. These blind spots lead to fatal head-on collisions, jeopardizing human lives and causing massive equipment damage. 
 
-## 💡 Our Solution: Divya Drishti
+##  Our Solution: Divya Drishti
 **Divya Drishti** (Divine Vision) is an industrial-grade telemetry and early-warning safety system that does not rely on visual cameras. Instead, it utilizes an array of **Acoustic Energy Sensors** and **Ultrasonic Proximity Radars** to detect approaching heavy machinery long before they enter the visual field. 
 
 The system features a **bare-metal hardware backend** (ESP32 / STM32H7) transmitting real-time telemetry over WebSockets to a breathtaking, production-ready **3D Digital Twin Dashboard** deployed inside the vehicle's cabin.
 
 ---
 
-## 🛠️ Core Architecture
+##  Core Architecture
 
 ### 1. Hardware Edge Nodes (ESP32 / STM32H7)
 - **Acoustic Energy Slope ($dE/dt$)**: Captures the rate of change in acoustic energy to distinguish between background mining noise and an approaching heavy vehicle.
@@ -38,7 +38,7 @@ Built with **Three.js** and **Tailwind CSS**, the frontend is designed as an eli
 
 ---
 
-## 🚨 System States & Hazard Protocol
+##  System States & Hazard Protocol
 
 The dashboard responds dynamically to real-time telemetry, escalating through distinct safety protocols:
 
@@ -51,7 +51,7 @@ The dashboard responds dynamically to real-time telemetry, escalating through di
 
 ---
 
-## 🚀 Running the Project Locally
+##  Running the Project Locally
 
 ### Prerequisites
 - Node.js (for running the local development server)
@@ -77,7 +77,7 @@ For presentation purposes, the dashboard includes a **Mock Data Pipeline**. In t
 
 ---
 
-## 👨‍💻 Tech Stack
+##  Tech Stack
 * **Hardware**: C++, Arduino Core, ESPAsyncWebServer
 * **Frontend UI**: HTML5, Tailwind CSS, Vanilla JS
 * **3D Rendering Engine**: Three.js (WebGL)
