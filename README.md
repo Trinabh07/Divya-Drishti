@@ -1,5 +1,5 @@
 <div align="center">
-<img src="/banner.png" alt="Divya Drishti Banner" />
+
   
   #  Divya Drishti
   **Next-Generation Mining Safety & Acoustic Detection System**
